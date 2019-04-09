@@ -177,6 +177,7 @@ int main( int argc, char** argv )
 
     cv::Mat tvecN = outM3by4(cv::Rect(3,0,1,3));
     cout<<"R="<<rvecN<<endl;
+    cout << rvecN.at<double>(0)<<endl; 
     cout<<"t="<<tvecN<<endl;
     cout<<"inliers: "<<inliers.rows<<endl; 
 

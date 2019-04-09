@@ -80,6 +80,7 @@ int main( int argc, char** argv )
         closedir(dir);
     }
     printf("finsih loading the data\n"); 
+
     #pragma omp parallel for
     for (int i = 0; i < source.size(); ++i)
     {
@@ -94,23 +95,30 @@ int main( int argc, char** argv )
                                     distination[i].kp, distination[i].desp);
     }
     printf("Source finish calcaulte the descriptor\n"); 
-    std::vector<cv::Mat> R(source.size()*distination.size()); 
-    std::vector<cv::Mat> T(source.size()*distination.size()); 
+    cv::Mat R0 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat R1 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat R2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat T0 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat T1 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
 
-
-
-    for (int i = 0; i < source.size(); ++i)
+    
+    for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
     {
-            printf("working on [%d]\n", i); 
+            printf("working on [%d]\n", sourceIndex ); 
         
-        for (int j = 0; j < distination.size(); ++j)
+            f1 = source[sourceIndex]; 
+        //#pragma omp parallel for
+        for (int distIndex = 0; distIndex < distination.size(); ++distIndex)
         {
-            f1 = source[i]; 
-            f2 = distination[j]; 
+            f2 = distination[distIndex]; 
             std::vector<cv::DMatch> matches; 
-            matcher->match(source[i].desp, distination[j].desp, matches);
+
+            matcher->match(source[sourceIndex].desp, distination[distIndex].desp, matches);
 
             std::vector<cv::DMatch> goodMatches; 
+
             double minDis = 999;
             // get the smallest dist 
             for (size_t i = 0; i < matches.size(); ++i)
@@ -119,7 +127,7 @@ int main( int argc, char** argv )
                     minDis = matches[i].distance;
             }
             minDis += 0.000001; 
-            int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
+            
             for ( size_t i=0; i<matches.size(); i++ )
             {
                 if (matches[i].distance <= scaleOfGoodMatch*minDis)
@@ -155,8 +163,15 @@ int main( int argc, char** argv )
             cv::Rodrigues(rmat,rvecN);
             cv::Mat tvecN = outM3by4(cv::Rect(3,0,1,3));
 
-            R[i*source.size() + j] = rvecN;
-            T[i*source.size() + j] = tvecN; 
+            R0.at<double>(sourceIndex, distIndex) = rvecN.at<double>(0); 
+            R1.at<double>(sourceIndex, distIndex) = rvecN.at<double>(1); 
+            R2.at<double>(sourceIndex, distIndex) = rvecN.at<double>(2); 
+            
+            T0.at<double>(sourceIndex, distIndex) = tvecN.at<double>(0);
+            T1.at<double>(sourceIndex, distIndex) = tvecN.at<double>(1); 
+            T2.at<double>(sourceIndex, distIndex) = tvecN.at<double>(2); 
+            //R[i*source.size() + j] = rvecN;
+            //T[i*source.size() + j] = tvecN; 
 
             if (display)
             {
@@ -166,13 +181,21 @@ int main( int argc, char** argv )
 
         }
         
-        for (int i = 0; i < source.size()*distination.size(); ++i)
-        {
-
-        }
-
-        
     }
+    cv::Mat means, stddev;
+	cv::meanStdDev(R0, means, stddev);
+    printf("R0: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+	cv::meanStdDev(R1, means, stddev);
+    printf("R1: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+	cv::meanStdDev(R2, means, stddev);
+    printf("R2: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+    cv::meanStdDev(T0, means, stddev);
+    printf("T0: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+	cv::meanStdDev(T1, means, stddev);
+    printf("T1: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+	cv::meanStdDev(T2, means, stddev);
+    printf("T2: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+
 
     return 0; 
 
