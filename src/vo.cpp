@@ -48,8 +48,12 @@ int main( int argc, char** argv )
     std::vector<FRAME> distination;
 
     std::string folder1 = pd.getData("folder1"); 
-    std::string folder2 = pd.getData("folder2"); 
+    std::string folder2 = pd.getData("folder2");
+    cout << "Working on Folder :" << folder1 << endl; 
+    cout << "Working on Folder :" << folder2 << endl; 
+
     size_t count = 0; 
+
     if (auto dir = opendir(folder1.c_str())) 
     {
         while (auto f = readdir(dir)) 
