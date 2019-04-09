@@ -19,5 +19,5 @@ scaleFactor=105
 scaleOfGoodMatch=5
 #folder1=RV_Data/Pitch/d1_-40/
 #folder2=RV_Data/Pitch/d3_-34/
-folder1=RV_Data/Yaw/d1_44/
-folder2=RV_Data/Yaw/d4_35/
+folder1=RV_Data/Pitch/d1_-40/
+folder2=RV_Data/Pitch/d4_-31/
