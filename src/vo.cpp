@@ -110,8 +110,10 @@ int main( int argc, char** argv )
     
     for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
     {
-            printf("working on [%d]\n", sourceIndex ); 
-        
+            if (sourceIndex%20 == 0)
+            {
+                printf("working on [%d]\n", sourceIndex ); 
+            }
             f1 = source[sourceIndex]; 
         //#pragma omp parallel for
         for (int distIndex = 0; distIndex < distination.size(); ++distIndex)
