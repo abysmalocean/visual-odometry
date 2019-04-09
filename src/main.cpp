@@ -161,27 +161,23 @@ int main( int argc, char** argv )
         //imagCor.push_back(cv::Point2f(f2.kp[goodMatches[i].trainIdx].pt)); 
     }
     
-    cv::Mat rvec, tvec, inliers, rvecN;
-    cv::Mat outM3by4 = cv::Mat::zeros(3,4,CV_64F);
+    cv::Mat rvec, translationVec, inliers, ratationVector;
+    cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
     if (display)
     {
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
-    cv::estimateAffine3D(src, dst,outM3by4,inliers,3,0.9999);
+    cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
 
-    cout<<"affine M = "<<outM3by4<<endl;
+    std::cout<<"affine transforation is : \n"<<affine<<endl;
     
-    cv::Mat rmat = outM3by4(cv::Rect(0,0,3,3));
-    cv::Rodrigues(rmat,rvecN);
+    cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
+    cv::Rodrigues(ratationMatrix,ratationVector);
 
-    cv::Mat tvecN = outM3by4(cv::Rect(3,0,1,3));
-    cout<<"R="<<rvecN<<endl;
-    cout << rvecN.at<double>(0)<<endl; 
-    cout<<"t="<<tvecN<<endl;
-    cout<<"inliers: "<<inliers.rows<<endl; 
-
-
+    translationVec = affine(cv::Rect(3,0,1,3));
+    std::cout<<"Rotation Vector :\n "<<ratationVector<<endl;
+    std::cout<<"translation : \n"<<translationVec<<endl;
     return 0; 
 
 }
