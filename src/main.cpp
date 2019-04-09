@@ -12,18 +12,69 @@ Contact: liangxuav@gmail.com
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-/*
-// FRAME Struct
-struct FRAME
-{
-    int frameID; 
-    cv::Mat rgb, depth; // image and depth
-    cv::Mat desp;       // descriptor
-    vector<cv::KeyPoint> kp; // key points
-};
-*/
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
+
 using std::cout; 
 using std::endl;
+
+void poseEstimation3D3D
+(const std::vector<cv::Point3f>& pts1, 
+ const std::vector<cv::Point3f>& pts2,
+ std::vector<double> &R, std::vector<double>& t)
+{
+    cv::Point3f p1, p2; 
+    int N = pts1.size(); 
+    for (int i = 0; i < N; ++i)
+    {
+        p1 += pts1[i]; 
+        p2 += pts2[i]; 
+    }
+    p1 = cv::Point3f(cv::Vec3f(p1) / N); 
+    p2 = cv::Point3f(cv::Vec3f(p2) / N); 
+    std::vector<cv::Point3f>     q1 ( N ), q2 ( N ); // remove the center
+    for ( int i=0; i<N; i++ )
+    {
+        q1[i] = pts1[i] - p1;
+        q2[i] = pts2[i] - p2;
+    }
+    // compute q1 * q2 ^ t
+    Eigen::Matrix3d W = Eigen::Matrix3d::Zero();
+    for (int i = 0; i < N; i++)
+    {
+        W += Eigen::Vector3d(q1[i].x, q1[i].y, q1[i].z) * 
+             Eigen::Vector3d(q2[i].x, q2[i].y, q2[i].z).transpose(); 
+    }
+    // SVD on W 
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(W, Eigen::ComputeFullU|Eigen::ComputeFullV); 
+    Eigen::Matrix3d U = svd.matrixU(); 
+    Eigen::Matrix3d V = svd.matrixV(); 
+
+    if (U.determinant() * V.determinant() < 0)
+	{
+        for (int x = 0; x < 3; ++x)
+        {
+            U(x, 2) *= -1;
+        }
+	}
+    Eigen::Matrix3d R_ = U * (V.transpose()); 
+    Eigen::Vector3d t_ = Eigen::Vector3d ( p1.x, p1.y, p1.z ) - 
+                         R_ * Eigen::Vector3d ( p2.x, p2.y, p2.z );
+    // convert to cv::Mat
+    auto rot = Eigen::AngleAxisd(R_).axis();
+    R[0] = rot[0]; 
+    R[1] = rot[1]; 
+    R[2] = rot[2]; 
+
+    
+
+    t[0] = t_(0,0); 
+    t[1] = t_(1,0); 
+    t[2] = t_(2,0); 
+    
+
+}
 
 int main( int argc, char** argv )
 {
@@ -143,13 +194,13 @@ int main( int argc, char** argv )
         //cout << p1.y << " " << p2.y << endl; 
         //cout << endl;  
 
-        point1.x = f1.depth.at<double>(int(p1.x), int(p1.y), 0); 
-        point1.y = f1.depth.at<double>(int(p1.x), int(p1.y), 1); 
-        point1.z = f1.depth.at<double>(int(p1.x), int(p1.y), 2);
+        point1.x = f1.depth.at<double>(int(p1.y), int(p1.x), 0); 
+        point1.y = f1.depth.at<double>(int(p1.y), int(p1.x), 1); 
+        point1.z = f1.depth.at<double>(int(p1.y), int(p1.x), 2);
+        point2.x = f2.depth.at<double>(int(p2.y), int(p2.x), 0); 
+        point2.y = f2.depth.at<double>(int(p2.y), int(p2.x), 1); 
+        point2.z = f2.depth.at<double>(int(p2.y), int(p2.x), 2);
         
-        point2.x = f2.depth.at<double>(int(p2.x), int(p2.y), 0); 
-        point2.y = f2.depth.at<double>(int(p2.x), int(p2.y), 1); 
-        point2.z = f2.depth.at<double>(int(p2.x), int(p2.y), 2);
         if (display)
         {
             cout << point1 << endl; 
@@ -168,7 +219,7 @@ int main( int argc, char** argv )
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
-    cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
+    cv::estimateAffine3D(src, dst,affine,inliers,4,0.9999);
 
     std::cout<<"affine transforation is : \n"<<affine<<endl;
     
@@ -178,6 +229,20 @@ int main( int argc, char** argv )
     translationVec = affine(cv::Rect(3,0,1,3));
     std::cout<<"Rotation Vector :\n "<<ratationVector<<endl;
     std::cout<<"translation : \n"<<translationVec<<endl;
+
+    std::vector<double> t(3); 
+    std::vector<double> R(3); 
+
+    poseEstimation3D3D(src, dst, R, t); 
+    cv::Rodrigues(R,ratationVector);
+    std::cout << " 3D3D SVD Result" << std::endl; 
+    std::cout << R[0] << " " << R[1] << " " << R[2] << std::endl; 
+    std::cout << " translation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
+
+   
+
+
+
     return 0; 
 
 }

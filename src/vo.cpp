@@ -14,8 +14,70 @@ Contact: liangxuav@gmail.com
 #include <dirent.h>
 #include <omp.h>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
+
 using std::cout; 
 using std::endl;
+
+
+void poseEstimation3D3D
+(const std::vector<cv::Point3f>& pts1, 
+ const std::vector<cv::Point3f>& pts2,
+ std::vector<double>& R, std::vector<double>& t)
+{
+    cv::Point3f p1, p2; 
+    int N = pts1.size(); 
+    for (int i = 0; i < N; ++i)
+    {
+        p1 += pts1[i]; 
+        p2 += pts2[i]; 
+    }
+    p1 = cv::Point3f(cv::Vec3f(p1) / N); 
+    p2 = cv::Point3f(cv::Vec3f(p2) / N); 
+    std::vector<cv::Point3f>     q1 ( N ), q2 ( N ); // remove the center
+    for ( int i=0; i<N; i++ )
+    {
+        q1[i] = pts1[i] - p1;
+        q2[i] = pts2[i] - p2;
+    }
+    // compute q1 * q2 ^ t
+    Eigen::Matrix3d W = Eigen::Matrix3d::Zero();
+    for (int i = 0; i < N; i++)
+    {
+        W += Eigen::Vector3d(q1[i].x, q1[i].y, q1[i].z) * 
+             Eigen::Vector3d(q2[i].x, q2[i].y, q2[i].z).transpose(); 
+    }
+    // SVD on W 
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(W, Eigen::ComputeFullU|Eigen::ComputeFullV); 
+    Eigen::Matrix3d U = svd.matrixU(); 
+    Eigen::Matrix3d V = svd.matrixV(); 
+
+    if (U.determinant() * V.determinant() < 0)
+	{
+        for (int x = 0; x < 3; ++x)
+        {
+            U(x, 2) *= -1;
+        }
+	}
+    Eigen::Matrix3d R_ = U * (V.transpose()); 
+    Eigen::Vector3d t_ = Eigen::Vector3d ( p1.x, p1.y, p1.z ) - 
+                         R_ * Eigen::Vector3d ( p2.x, p2.y, p2.z );
+    // convert to cv::Mat
+    auto rot = Eigen::AngleAxisd(R_).axis();
+    R[0] = rot[0]; 
+    R[1] = rot[1]; 
+    R[2] = rot[2]; 
+
+    
+
+    t[0] = t_(0,0); 
+    t[1] = t_(1,0); 
+    t[2] = t_(2,0); 
+    
+
+}
 
 int main( int argc, char** argv )
 {
@@ -162,27 +224,29 @@ int main( int argc, char** argv )
                 src.push_back(point1); 
                 dst.push_back(point2);
             }
-            cv::Mat rvec, tvec, inliers, rvecN;
-            cv::Mat outM3by4 = cv::Mat::zeros(3,4,CV_64F);
-            cv::estimateAffine3D(src, dst,outM3by4,inliers,3,0.9999);
-            cv::Mat rmat = outM3by4(cv::Rect(0,0,3,3));
-            cv::Rodrigues(rmat,rvecN);
-            cv::Mat tvecN = outM3by4(cv::Rect(3,0,1,3));
 
-            R0.at<double>(sourceIndex, distIndex) = rvecN.at<double>(0); 
-            R1.at<double>(sourceIndex, distIndex) = rvecN.at<double>(1); 
-            R2.at<double>(sourceIndex, distIndex) = rvecN.at<double>(2); 
+            cv::Mat rvec, translationVec, inliers, ratationVector;
+            cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
+            cv::estimateAffine3D(src, dst,affine,inliers,4,0.9999);
+
+            cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
+            translationVec = affine(cv::Rect(3,0,1,3));
+            cv::Rodrigues(ratationMatrix,ratationVector);
+
+            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0); 
+            R1.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(1); 
+            R2.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(2); 
             
-            T0.at<double>(sourceIndex, distIndex) = tvecN.at<double>(0);
-            T1.at<double>(sourceIndex, distIndex) = tvecN.at<double>(1); 
-            T2.at<double>(sourceIndex, distIndex) = tvecN.at<double>(2); 
+            T0.at<double>(sourceIndex, distIndex) = translationVec.at<double>(0);
+            T1.at<double>(sourceIndex, distIndex) = translationVec.at<double>(1); 
+            T2.at<double>(sourceIndex, distIndex) = translationVec.at<double>(2); 
             //R[i*source.size() + j] = rvecN;
             //T[i*source.size() + j] = tvecN; 
 
             if (display)
             {
-                cout<<"R="<<rvecN<<endl;
-                cout<<"t="<<tvecN<<endl;
+                cout<<"R="<<ratationVector<<endl;
+                cout<<"t="<<translationVec<<endl;
             }
 
         }

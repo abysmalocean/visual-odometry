@@ -23,11 +23,15 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     int width  =   atoi( pd->getData( "width" ).c_str() );
     int height    =   atoi( pd->getData( "height"   ).c_str() );
     int display = atoi( pd->getData( "display" ).c_str() );
+    int imageDisplay = atoi( pd->getData( "imageDisplay" ).c_str() );
 
     FRAME f;
-    cv::Mat gray  = cv::Mat::zeros(height,width, CV_64F); 
-    int size[3] = {width, height, 3}; 
+    //cv::Mat gray  = cv::Mat::zeros(height,width, CV_64F); 
+    cv::Mat gray  = cv::Mat::zeros(height, width, CV_64F); 
+    int size[3] = {height, width, 3}; 
     cv::Mat depth(3, size , CV_64F, cv::Scalar(0));
+    std::cout << "Size is " << depth.size() << std::endl; 
+
     std::ifstream imageFile(FileName); 
     std::string str; 
     std::string tmp; 
@@ -101,7 +105,44 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             
         }
     }
-    cv::normalize(gray, gray, 1.0, 0.0, cv::NORM_MINMAX); 
+
+    cv::normalize(gray, gray, 1.0, 0.0, cv::NORM_MINMAX);
+    f.depth = depth.clone(); 
+
+    /*
+        // extract planes from matrix
+    std::vector<cv::Mat> matVec;
+    for (int p = 0; p < dims[2]; ++p) {
+        double *ind = (double*)mnd.data + p * dims[0] * dims[1]; // sub-matrix pointer
+        matVec.push_back(cv::Mat(2, dims, CV_64F, ind).clone()); // clone if mnd goes away
+    }
+    */
+    std::vector<cv::Mat> matVec;
+    
+    for (int p = 0; p < size[2]; ++p) {
+        double *ind = (double*)depth.data + p * size[1] * size[0]; // sub-matrix pointer
+        matVec.push_back(cv::Mat(2, size, CV_64F, ind).clone()); // clone if mnd goes away
+    }
+    if(imageDisplay)
+    {
+        cv::normalize(matVec[0], matVec[0], 1.0, 0.0, cv::NORM_MINMAX);
+        cv::normalize(matVec[1], matVec[1], 1.0, 0.0, cv::NORM_MINMAX);
+        cv::normalize(matVec[1], matVec[1], 1.0, 0.0, cv::NORM_MINMAX);
+        matVec[0] *= 255.0;
+        matVec[1] *= 255.0;
+        matVec[2] *= 255.0;
+        matVec[0].convertTo(matVec[0],CV_8UC1); 
+        matVec[1].convertTo(matVec[0],CV_8UC1); 
+        matVec[2].convertTo(matVec[0],CV_8UC1); 
+        cv::imshow("fist channel ", matVec[0]); 
+        cv::imshow("Second Channel ", matVec[1]); 
+        cv::imshow("third Channel ", matVec[2]); 
+        cv::waitKey(9);
+    }
+
+
+    //cv::GaussianBlur(depth, f.depth, cv::Size(5,5), 0);
+
     gray *= 255.0; 
     gray.convertTo(gray, CV_8UC1);
 
