@@ -20,4 +20,4 @@ scaleOfGoodMatch=5
 #folder1=RV_Data/Pitch/d1_-40/
 #folder2=RV_Data/Pitch/d3_-34/
 folder1=RV_Data/Translation/Y1/
-folder2=RV_Data/Translation/Y3/
+folder2=RV_Data/Translation/Y4/
