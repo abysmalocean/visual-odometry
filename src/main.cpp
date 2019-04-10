@@ -88,8 +88,11 @@ int main( int argc, char** argv )
     int height    =   atoi( pd.getData( "height"   ).c_str() );
     std::string filePath1 = pd.getData("testImage1"); 
     std::string filePath2 = pd.getData("testImage2"); 
+
     FRAME f1 = readImage(filePath1, &pd);
     FRAME f2 = readImage(filePath2, &pd);
+    std::cout << "working on : \n" << filePath1 << "\n" << filePath2 << endl;  
+
     if (imgDisplay)
     {
         cv::imshow("Frame1", f1.rgb); 
@@ -194,18 +197,26 @@ int main( int argc, char** argv )
         //cout << p1.y << " " << p2.y << endl; 
         //cout << endl;  
 
+        point1.x = f1.depth_x.at<double>(int(p1.x), int(p1.y)); 
+        point1.y = f1.depth_y.at<double>(int(p1.x), int(p1.y)); 
+        point1.z = f1.depth_z.at<double>(int(p1.x), int(p1.y));
+        point2.x = f2.depth_x.at<double>(int(p2.x), int(p2.y)); 
+        point2.y = f2.depth_y.at<double>(int(p2.x), int(p2.y)); 
+        point2.z = f2.depth_z.at<double>(int(p2.x), int(p2.y));
+
+        /*
         point1.x = f1.depth.at<double>(int(p1.y), int(p1.x), 0); 
         point1.y = f1.depth.at<double>(int(p1.y), int(p1.x), 1); 
         point1.z = f1.depth.at<double>(int(p1.y), int(p1.x), 2);
         point2.x = f2.depth.at<double>(int(p2.y), int(p2.x), 0); 
         point2.y = f2.depth.at<double>(int(p2.y), int(p2.x), 1); 
         point2.z = f2.depth.at<double>(int(p2.y), int(p2.x), 2);
-        
+        */
         if (display)
         {
-            cout << point1 << endl; 
-            cout << point2 << endl; 
-            cout << endl; 
+            //cout << point1 << endl; 
+            //cout << point2 << endl; 
+            //cout << endl; 
         }
         src.push_back(point1); 
         dst.push_back(point2);
@@ -221,23 +232,23 @@ int main( int argc, char** argv )
     }
     cv::estimateAffine3D(src, dst,affine,inliers,4,0.9999);
 
-    std::cout<<"affine transforation is : \n"<<affine<<endl;
+    //std::cout<<"\naffine transforation is : \n"<<affine<<endl;
     
     cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
     cv::Rodrigues(ratationMatrix,ratationVector);
 
     translationVec = affine(cv::Rect(3,0,1,3));
-    std::cout<<"Rotation Vector :\n "<<ratationVector<<endl;
-    std::cout<<"translation : \n"<<translationVec<<endl;
+    std::cout<<"\nRotation Vector :\n "<<ratationVector<<endl;
+    std::cout<<"\ntranslation : \n"<<translationVec<<endl;
 
     std::vector<double> t(3); 
     std::vector<double> R(3); 
 
     poseEstimation3D3D(src, dst, R, t); 
     cv::Rodrigues(R,ratationVector);
-    std::cout << " 3D3D SVD Result" << std::endl; 
+    std::cout << " \n3D3D SVD Result" << std::endl; 
     std::cout << R[0] << " " << R[1] << " " << R[2] << std::endl; 
-    std::cout << " translation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
+    std::cout << " \ntranslation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
 
    
 

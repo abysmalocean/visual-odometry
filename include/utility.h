@@ -35,6 +35,7 @@ struct FRAME
 {
     int frameID; 
     cv::Mat rgb, depth; // image and depth
+    cv::Mat depth_x, depth_y, depth_z; 
     cv::Mat desp;       // descriptor
     std::vector<cv::KeyPoint> kp; // key points
 };

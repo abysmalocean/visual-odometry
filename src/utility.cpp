@@ -11,6 +11,7 @@ struct FRAME
     int frameID; 
     cv::Mat rgb, depth; // image and depth
     cv::Mat desp;       // descriptor
+    cv::Mat depth_x, depth_y, depth_z; 
     vector<cv::KeyPoint> kp; // key points
 };
 */
@@ -27,10 +28,14 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
 
     FRAME f;
     //cv::Mat gray  = cv::Mat::zeros(height,width, CV_64F); 
-    cv::Mat gray  = cv::Mat::zeros(height, width, CV_64F); 
+    
+    cv::Mat gray    = cv::Mat::zeros(height, width, CV_64F); 
+    cv::Mat depthX  = cv::Mat::zeros(height, width, CV_64F); 
+    cv::Mat depthY  = cv::Mat::zeros(height, width, CV_64F); 
+    cv::Mat depthZ  = cv::Mat::zeros(height, width, CV_64F); 
+
     int size[3] = {height, width, 3}; 
     cv::Mat depth(3, size , CV_64F, cv::Scalar(0));
-    std::cout << "Size is " << depth.size() << std::endl; 
 
     std::ifstream imageFile(FileName); 
     std::string str; 
@@ -43,28 +48,49 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
         // every line is 176 data, for each row
         // get the first depth, channel 2
         ++lineCount;
-        if (lineCount > 0 && lineCount < height + 1 ) 
+        if (lineCount > 0 && (lineCount < height + 1) ) 
         {
+            //std::cout << lineCount - 1 << std::endl; 
             for (int i = 0; i < width; ++i)
             {
-                imageFile >> depth.at<double>(lineCount-1,i,2); 
+                imageFile >> depth.at<double>(lineCount-1,i,2);
+                depthZ.at<double>(lineCount - 1, i) = depth.at<double>(lineCount-1,i,2); 
+                //std::cout << depthZ.at<double>(lineCount - 1, i) << std::endl;
             }
         }
+
         // get the second depth, channel 0 
         else if(lineCount > (height + 1) && lineCount < (height + 1)* 2)
         {
+            //std::cout << lineCount - height - 2 << std::endl; 
             for (int i = 0; i < width; ++i)
             {
-                imageFile >> depth.at<double>(lineCount - height, i, 0); 
+                /*
+                imageFile >> depthX.at<double>(lineCount - height - 2, i);
+
+                depth.at<double>(lineCount - height - 2, i, 0) = 
+                        depthX.at<double>(lineCount - height - 2, i);
+                */
+               imageFile >> depth.at<double>(lineCount - height - 2, i, 0);
+               depthX.at<double>(lineCount - height - 2, i) = 
+                  depth.at<double>(lineCount - height - 2, i, 0); 
             }
         }
 
         // get the third depth, channel 1 
         else if(lineCount > (height + 1) * 2 && lineCount < (height + 1) * 3)
         {
+            //std::cout << lineCount - 1- 2 * (height + 1) << std::endl;
             for (int i = 0; i < width; ++i)
             {
+                /*
+                imageFile >> depthY.at<double>(lineCount - 1- 2 * (height + 1), i) ; 
+                depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1) = 
+                        depthY.at<double>(lineCount - 1- 2 * (height + 1), i); 
+                */
                 imageFile >> depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
+                depthY.at<double>(lineCount - 1- 2 * (height + 1), i) = 
+                 depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
             }
         }
 
@@ -107,48 +133,40 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     }
 
     cv::normalize(gray, gray, 1.0, 0.0, cv::NORM_MINMAX);
-    f.depth = depth.clone(); 
-
-    /*
-        // extract planes from matrix
-    std::vector<cv::Mat> matVec;
-    for (int p = 0; p < dims[2]; ++p) {
-        double *ind = (double*)mnd.data + p * dims[0] * dims[1]; // sub-matrix pointer
-        matVec.push_back(cv::Mat(2, dims, CV_64F, ind).clone()); // clone if mnd goes away
-    }
-    */
-    std::vector<cv::Mat> matVec;
-    
-    for (int p = 0; p < size[2]; ++p) {
-        double *ind = (double*)depth.data + p * size[1] * size[0]; // sub-matrix pointer
-        matVec.push_back(cv::Mat(2, size, CV_64F, ind).clone()); // clone if mnd goes away
-    }
-    if(imageDisplay)
-    {
-        cv::normalize(matVec[0], matVec[0], 1.0, 0.0, cv::NORM_MINMAX);
-        cv::normalize(matVec[1], matVec[1], 1.0, 0.0, cv::NORM_MINMAX);
-        cv::normalize(matVec[1], matVec[1], 1.0, 0.0, cv::NORM_MINMAX);
-        matVec[0] *= 255.0;
-        matVec[1] *= 255.0;
-        matVec[2] *= 255.0;
-        matVec[0].convertTo(matVec[0],CV_8UC1); 
-        matVec[1].convertTo(matVec[0],CV_8UC1); 
-        matVec[2].convertTo(matVec[0],CV_8UC1); 
-        cv::imshow("fist channel ", matVec[0]); 
-        cv::imshow("Second Channel ", matVec[1]); 
-        cv::imshow("third Channel ", matVec[2]); 
-        cv::waitKey(9);
-    }
-
-
-    //cv::GaussianBlur(depth, f.depth, cv::Size(5,5), 0);
-
     gray *= 255.0; 
     gray.convertTo(gray, CV_8UC1);
+
+    if (false)
+    {
+    cv::imshow("gray img", gray);
+
+    depthZ *= 255.0; 
+    cv::normalize(depthZ, depthZ, 1.0, 0.0, cv::NORM_MINMAX);
+    depthZ *= 255.0; 
+    depthZ.convertTo(depthZ, CV_8UC1);
+    cv::imshow("DepthZ", depthZ);
+
+    cv::normalize(depthX, depthX, 1.0, 0.0, cv::NORM_MINMAX);
+    depthX *= 255.0; 
+    depthX.convertTo(depthX, CV_8UC1);
+    cv::imshow("DepthX", depthX);
+    // depthX is Z; 
+    cv::normalize(depthY, depthY, 1.0, 0.0, cv::NORM_MINMAX);
+    depthY *= 255.0; 
+    depthY.convertTo(depthY, CV_8UC1);
+    cv::imshow("DepthY", depthY);
+    cv::waitKey(0); 
+    }
+
+    
 
     //cv::equalizeHist(gray,gray); 
     f.rgb = gray.clone(); 
     f.depth = depth.clone(); 
+
+    f.depth_x = depthX.clone(); 
+    f.depth_y = depthY.clone(); 
+    f.depth_z = depthZ.clone(); 
     return f; 
 }
 
