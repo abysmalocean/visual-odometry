@@ -214,13 +214,12 @@ int main( int argc, char** argv )
                 //cout << p1.x << " " << p2.x << endl; 
                 //cout << p1.y << " " << p2.y << endl; 
                 //cout << endl;  
-                point1.x = f1.depth.at<double>(int(p1.x), int(p1.y), 0); 
-                point1.y = f1.depth.at<double>(int(p1.x), int(p1.y), 1); 
-                point1.z = f1.depth.at<double>(int(p1.x), int(p1.y), 2);
-
-                point2.x = f2.depth.at<double>(int(p2.x), int(p2.y), 0); 
-                point2.y = f2.depth.at<double>(int(p2.x), int(p2.y), 1); 
-                point2.z = f2.depth.at<double>(int(p2.x), int(p2.y), 2);
+                point1.x = f1.depth_x.at<double>(int(p1.x), int(p1.y)); 
+                point1.y = f1.depth_y.at<double>(int(p1.x), int(p1.y)); 
+                point1.z = f1.depth_z.at<double>(int(p1.x), int(p1.y));
+                point2.x = f2.depth_x.at<double>(int(p2.x), int(p2.y)); 
+                point2.y = f2.depth_y.at<double>(int(p2.x), int(p2.y)); 
+                point2.z = f2.depth_z.at<double>(int(p2.x), int(p2.y));
                 src.push_back(point1); 
                 dst.push_back(point2);
             }

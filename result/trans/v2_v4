@@ -9,9 +9,9 @@ working on [20]
 working on [40]
 working on [60]
 working on [80]
-R0: mean: -0.27, stddev: 0.46
-R1: mean: -0.09, stddev: 0.48
-R2: mean: 0.13, stddev: 0.68
-T0: mean: 0.19, stddev: 1.13
-T1: mean: -0.08, stddev: 1.24
-T2: mean: 2.14, stddev: 2.71
+R0: mean: -0.26, stddev: 0.46
+R1: mean: -0.06, stddev: 0.50
+R2: mean: 0.08, stddev: 0.68
+T0: mean: 0.30, stddev: 1.16
+T1: mean: -0.11, stddev: 1.52
+T2: mean: 2.10, stddev: 3.19
