@@ -238,17 +238,25 @@ int main( int argc, char** argv )
     cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
     cv::Rodrigues(ratationMatrix,ratationVector);
 
+    cv::Mat R = ratationMatrix; 
+    double sy= std::sqrt(R.at<double>(0,0) * R.at<double>(0,0) +  R.at<double>(1,0) * R.at<double>(1,0) );
+    double roll = std::atan2(R.at<double>(2,1) , R.at<double>(2,2));
+    double pitch = std::atan2(-R.at<double>(2,0), sy);
+    double yaw = std::atan2(R.at<double>(1,0), R.at<double>(0,0));
+    std::cout << "Roll " << roll << " pitch " << pitch << " yaw " << yaw << std::endl; 
+
+
     translationVec = affine(cv::Rect(3,0,1,3));
     std::cout<<"\nRotation Vector :\n "<<ratationVector<<endl;
     std::cout<<"\ntranslation : \n"<<translationVec<<endl;
 
     std::vector<double> t(3); 
-    std::vector<double> R(3); 
+    std::vector<double> Rot(3); 
 
-    poseEstimation3D3D(src, dst, R, t); 
+    poseEstimation3D3D(src, dst, Rot, t); 
     cv::Rodrigues(R,ratationVector);
     std::cout << " \n3D3D SVD Result" << std::endl; 
-    std::cout << R[0] << " " << R[1] << " " << R[2] << std::endl; 
+    std::cout << Rot[0] << " " << Rot[1] << " " << Rot[2] << std::endl; 
     std::cout << " \ntranslation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
 
    

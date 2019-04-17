@@ -100,7 +100,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             for (int i = 0; i < width; ++i)
             {
                 imageFile >> gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0);
-                //std::cout << gray.at<double>(lineCount - 3*height, i, 0); 
+                //std::cout << gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0) << std::endl; 
             }
             //std::cout <<std::endl;
         }
