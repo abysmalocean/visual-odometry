@@ -234,7 +234,7 @@ int main( int argc, char** argv )
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);
             ratationVector = ratationVector * (180.0 / 3.14); 
-            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0); 
+            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0)-3.0; 
             R1.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(1); 
             R2.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(2); 
             
