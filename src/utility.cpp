@@ -137,9 +137,10 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     cv::normalize(gray, gray, 1.0, 0.0, cv::NORM_MINMAX);
     gray *= 255.0; 
     gray.convertTo(gray, CV_8UC1);
-
+    // cv::imshow("gray img", gray);
     if (false)
     {
+        std::cout << FileName << std::endl; 
     cv::imshow("gray img", gray);
 
     depthZ *= 255.0; 

@@ -1,10 +1,10 @@
 display=0
-imageDisplay=1
+imageDisplay=0
 width=176 
 height=144
 DataFolder=RV_Data
-testImage2=RV_Data/RV_Data1_Test/d7_-22/d7_0005.dat
-testImage1=RV_Data/RV_Data1_Test/d5_-28/d5_0005.dat
+testImage2=RV_Data/RV_Data1_Test/d7_-22/d7_0095.dat
+testImage1=RV_Data/RV_Data1_Test/d6_-25/d6_0006.dat
 #testImage1=RV_Data/Translation/Y1/frm_0001.dat
 #testImage2=RV_Data/Translation/Y2/frm_0002.dat
 #testImage1=RV_Data/Pitch/d1_-40/d1_0001.dat
@@ -76,6 +76,6 @@ scaleOfGoodMatch=5
 #folder1=RV_Data/Yaw/d1_44/
 #folder2=RV_Data/Yaw/d4_35/
 
-folder1=RV_Data/RV_Data1_Test/d7_-22/
-folder2=RV_Data/RV_Data1_Test/d5_-28/
+folder1=RV_Data/RV_Data1_Test/d6_-25/
+folder2=RV_Data/RV_Data1_Test/d7_-22/
 

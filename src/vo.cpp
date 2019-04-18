@@ -184,6 +184,7 @@ int main( int argc, char** argv )
             std::vector<cv::DMatch> matches; 
 
             matcher->match(source[sourceIndex].desp, distination[distIndex].desp, matches);
+            //std::cout << matches.size() << std::endl; 
 
             std::vector<cv::DMatch> goodMatches; 
 
@@ -226,7 +227,8 @@ int main( int argc, char** argv )
 
             cv::Mat rvec, translationVec, inliers, ratationVector;
             cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
-            cv::estimateAffine3D(src, dst,affine,inliers,4,0.9999);
+            //std::cout << "size is " <<src.size() << std::endl; 
+            cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
 
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
