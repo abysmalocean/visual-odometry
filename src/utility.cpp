@@ -161,6 +161,10 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     }
 
     
+    cv::GaussianBlur(depthX,depthX,cv::Size(5,5),0);
+    cv::GaussianBlur(depthY,depthY,cv::Size(5,5),0);
+    cv::GaussianBlur(depthZ,depthZ,cv::Size(5,5),0);
+    //cv::GaussianBlur(gray,gray,cv::Size(3,3),1);
 
     //cv::equalizeHist(gray,gray); 
     f.rgb = gray.clone(); 
