@@ -230,7 +230,8 @@ int main( int argc, char** argv )
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
-    cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
+    cv::estimateAffine3D(src, dst,affine,inliers,0.01,0.9999);
+    std::cout << "Inliners : " << inliers.size() << std::endl; 
 
     //std::cout<<"\naffine transforation is : \n"<<affine<<endl;
     
@@ -256,7 +257,7 @@ int main( int argc, char** argv )
     poseEstimation3D3D(src, dst, Rot, t); 
     cv::Rodrigues(R,ratationVector);
     std::cout << " \n3D3D SVD Result" << std::endl; 
-    //std::cout << R[0] * (180 / 3.14) << " " << R[1] * (180 / 3.14) << " " << R[2] * (180 / 3.14) << std::endl; 
+    std::cout << Rot[0] << " " << Rot[1] << " " << Rot[2] << std::endl; 
     std::cout << " \ntranslation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
 
    

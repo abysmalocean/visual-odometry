@@ -229,6 +229,7 @@ int main( int argc, char** argv )
             cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
             //std::cout << "size is " <<src.size() << std::endl; 
             cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
+            
 
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
