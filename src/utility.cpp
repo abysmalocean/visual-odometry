@@ -4,6 +4,7 @@
 #include <iostream>
 #include <omp.h>
 
+
 /*
 // FRAME Struct
 struct FRAME
@@ -54,7 +55,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             for (int i = 0; i < width; ++i)
             {
                 imageFile >> depth.at<double>(lineCount-1,i,2);
-                depthZ.at<double>(lineCount - 1, i) = depth.at<double>(lineCount-1,i,2); 
+                depthZ.at<double>(lineCount - 1, i) = 1000.0 * depth.at<double>(lineCount-1,i,2); 
                 //std::cout << depthZ.at<double>(lineCount - 1, i) << std::endl;
             }
         }
@@ -73,7 +74,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 */
                imageFile >> depth.at<double>(lineCount - height - 2, i, 0);
                depthX.at<double>(lineCount - height - 2, i) = 
-                  depth.at<double>(lineCount - height - 2, i, 0); 
+                  1000.0 * depth.at<double>(lineCount - height - 2, i, 0); 
             }
         }
 
@@ -90,7 +91,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 */
                 imageFile >> depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
                 depthY.at<double>(lineCount - 1- 2 * (height + 1), i) = 
-                 depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
+                 1000.0 *  depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
             }
         }
 
@@ -100,6 +101,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             for (int i = 0; i < width; ++i)
             {
                 imageFile >> gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0);
+                gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0) *= 1000.0;
                 //std::cout << gray.at<double>(lineCount - 3*height, i, 0); 
             }
             //std::cout <<std::endl;

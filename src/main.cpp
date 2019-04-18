@@ -197,13 +197,12 @@ int main( int argc, char** argv )
         //cout << p1.y << " " << p2.y << endl; 
         //cout << endl;  
 
-        point1.x = f1.depth_x.at<double>(int(p1.x), int(p1.y)); 
-        point1.y = f1.depth_y.at<double>(int(p1.x), int(p1.y)); 
-        point1.z = f1.depth_z.at<double>(int(p1.x), int(p1.y));
-        
-        point2.x = f2.depth_x.at<double>(int(p2.x), int(p2.y)); 
-        point2.y = f2.depth_y.at<double>(int(p2.x), int(p2.y)); 
-        point2.z = f2.depth_z.at<double>(int(p2.x), int(p2.y));
+        point1.x = f1.depth_x.at<double>(int(p1.y), int(p1.x)); 
+        point1.y = f1.depth_y.at<double>(int(p1.y), int(p1.x)); 
+        point1.z = f1.depth_z.at<double>(int(p1.y), int(p1.x));
+        point2.x = f2.depth_x.at<double>(int(p2.y), int(p2.x)); 
+        point2.y = f2.depth_y.at<double>(int(p2.y), int(p2.x)); 
+        point2.z = f2.depth_z.at<double>(int(p2.y), int(p2.x));
 
         /*
         point1.x = f1.depth.at<double>(int(p1.y), int(p1.x), 0); 
