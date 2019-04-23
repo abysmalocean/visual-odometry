@@ -171,7 +171,7 @@ int main( int argc, char** argv )
     #pragma omp parallel for
     for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
     {
-            if (sourceIndex%5 == 0)
+            if (sourceIndex%1 == 0)
             {
                 printf("working on [%d]\n", sourceIndex ); 
             }
