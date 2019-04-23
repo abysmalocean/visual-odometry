@@ -168,7 +168,8 @@ int main( int argc, char** argv )
     cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
 
-    #pragma omp parallel for
+
+    //#pragma omp parallel for
     for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
     {
             if (sourceIndex%1 == 0)
