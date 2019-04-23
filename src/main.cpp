@@ -20,20 +20,20 @@ using std::cout;
 using std::endl;
 
 void poseEstimation3D3D
-(const std::vector<cv::Point3f>& pts1, 
- const std::vector<cv::Point3f>& pts2,
+(const std::vector<cv::Point3d>& pts1, 
+ const std::vector<cv::Point3d>& pts2,
  std::vector<double> &R, std::vector<double>& t)
 {
-    cv::Point3f p1, p2; 
+    cv::Point3d p1, p2; 
     int N = pts1.size(); 
     for (int i = 0; i < N; ++i)
     {
         p1 += pts1[i]; 
         p2 += pts2[i]; 
     }
-    p1 = cv::Point3f(cv::Vec3f(p1) / N); 
-    p2 = cv::Point3f(cv::Vec3f(p2) / N); 
-    std::vector<cv::Point3f>     q1 ( N ), q2 ( N ); // remove the center
+    p1 = cv::Point3d(cv::Vec3d(p1) / N); 
+    p2 = cv::Point3d(cv::Vec3d(p2) / N); 
+    std::vector<cv::Point3i>     q1 ( N ), q2 ( N ); // remove the center
     for ( int i=0; i<N; i++ )
     {
         q1[i] = pts1[i] - p1;
@@ -168,31 +168,31 @@ int main( int argc, char** argv )
         cout<<"good matches="<<goodMatches.size()<<endl;
         
     }
-    cv::Mat imgMatches;
-    cv::drawMatches( f1.rgb, f1.kp, f2.rgb, f2.kp, goodMatches, imgMatches );
-    cv::imwrite( "good_matches.png", imgMatches );
     if (imgDisplay)
     {
+        cv::Mat imgMatches;
+        cv::drawMatches( f1.rgb, f1.kp, f2.rgb, f2.kp, goodMatches, imgMatches );
+        cv::imwrite( "good_matches.png", imgMatches );
         cv::imshow( "good matches", imgMatches );
         cv::waitKey(0); 
     }
 
 
     // 3D poitns
-    std::vector<cv::Point3f> src ; 
-    std::vector<cv::Point3f> dst; 
+    std::vector<cv::Point3d> src ; 
+    std::vector<cv::Point3d> dst; 
     // 2D location
-    std::vector<cv::Point2f> imagCor; 
+    std::vector<cv::Point2d> imagCor; 
 
     for (size_t i = 0; i<goodMatches.size(); ++i)
     {
 
         
-        cv::Point2f p1 = f1.kp[goodMatches[i].queryIdx].pt;
-        cv::Point2f p2 = f2.kp[goodMatches[i].trainIdx].pt;
+        cv::Point2d p1 = f1.kp[goodMatches[i].queryIdx].pt;
+        cv::Point2d p2 = f2.kp[goodMatches[i].trainIdx].pt;
         
-        cv::Point3f point1; 
-        cv::Point3f point2;
+        cv::Point3d point1; 
+        cv::Point3d point2;
         //cout << p1.x << " " << p2.x << endl; 
         //cout << p1.y << " " << p2.y << endl; 
         //cout << endl;  
@@ -230,9 +230,36 @@ int main( int argc, char** argv )
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
-    cv::estimateAffine3D(src, dst,affine,inliers,0.01,0.9999);
-    std::cout << "Inliners : " << inliers.size() << std::endl; 
+    int threshold = src.size() / 2;
+    cv::estimateAffine3D(src, dst,affine,inliers, 11 ,0.999);
+    int count = 0; 
+    for (int i = 0; i < src.size(); ++i)
+    {
+        if(inliers.at<bool>(0,i) == true)
+        {
+            ++count; 
+        }
+    }
+    std::cout << "Inliners : " << count << std::endl; 
 
+    //std::cout << inliers << std::endl; 
+    //std::cout << src.size() << std::endl; 
+    int writeImg = atoi( pd.getData( "writeImg" ).c_str() );
+    if (writeImg)
+    {
+        cv::Mat imgMatches;
+        std::vector<cv::DMatch> goodMatches2;
+        for (int i = 0; i < src.size(); ++i)
+        {
+            //std::cout << inliers.at<bool>(0,i) << std::endl; 
+            if(inliers.at<bool>(0,i) == true)
+            {
+                goodMatches2.push_back(goodMatches[i]); 
+            }
+        }
+        cv::drawMatches( f1.rgb, f1.kp, f2.rgb, f2.kp, goodMatches2, imgMatches );
+        cv::imwrite( "good_matches.png", imgMatches );
+    }
     //std::cout<<"\naffine transforation is : \n"<<affine<<endl;
     
     cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
