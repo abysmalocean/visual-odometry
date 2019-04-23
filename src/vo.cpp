@@ -23,20 +23,20 @@ using std::endl;
 
 
 void poseEstimation3D3D
-(const std::vector<cv::Point3f>& pts1, 
- const std::vector<cv::Point3f>& pts2,
- std::vector<double>& R, std::vector<double>& t)
+(const std::vector<cv::Point3d>& pts1, 
+ const std::vector<cv::Point3d>& pts2,
+ std::vector<double> &R, std::vector<double>& t)
 {
-    cv::Point3f p1, p2; 
+    cv::Point3d p1, p2; 
     int N = pts1.size(); 
     for (int i = 0; i < N; ++i)
     {
         p1 += pts1[i]; 
         p2 += pts2[i]; 
     }
-    p1 = cv::Point3f(cv::Vec3f(p1) / N); 
-    p2 = cv::Point3f(cv::Vec3f(p2) / N); 
-    std::vector<cv::Point3f>     q1 ( N ), q2 ( N ); // remove the center
+    p1 = cv::Point3d(cv::Vec3d(p1) / N); 
+    p2 = cv::Point3d(cv::Vec3d(p2) / N); 
+    std::vector<cv::Point3i>     q1 ( N ), q2 ( N ); // remove the center
     for ( int i=0; i<N; i++ )
     {
         q1[i] = pts1[i] - p1;
@@ -79,6 +79,7 @@ void poseEstimation3D3D
 
 }
 
+
 int main( int argc, char** argv )
 {
     std::cout<<"Hello 591! First part of the project!!"<<std::endl;
@@ -102,9 +103,7 @@ int main( int argc, char** argv )
     double sigma         = atoi(pd.getData( "sigma" ).c_str())/10.0; 
     float scaleFactor = atoi(pd.getData( "scaleFactor" ).c_str())/100.0; 
     auto detector = cv::ORB::create(nfeatures, scaleFactor, nOctaveLayers, 31);
-    // flann mather
-    cv::Ptr<cv::DescriptorMatcher> matcher = 
-        cv::makePtr<cv::FlannBasedMatcher>(cv::makePtr<cv::flann::LshIndexParams>(12,20, 2));
+    
     
     std::vector<FRAME> source; 
     std::vector<FRAME> distination;
@@ -169,20 +168,22 @@ int main( int argc, char** argv )
     cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
 
-    
+    #pragma omp parallel for
     for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
     {
-            if (sourceIndex%20 == 0)
+            if (sourceIndex%5 == 0)
             {
                 printf("working on [%d]\n", sourceIndex ); 
             }
             f1 = source[sourceIndex]; 
-        //#pragma omp parallel for
+        
         for (int distIndex = 0; distIndex < distination.size(); ++distIndex)
         {
             f2 = distination[distIndex]; 
             std::vector<cv::DMatch> matches; 
-
+            // flann mather
+            cv::Ptr<cv::DescriptorMatcher> matcher = 
+            cv::makePtr<cv::FlannBasedMatcher>(cv::makePtr<cv::flann::LshIndexParams>(12,20, 2));
             matcher->match(source[sourceIndex].desp, distination[distIndex].desp, matches);
             //std::cout << matches.size() << std::endl; 
 
@@ -203,15 +204,15 @@ int main( int argc, char** argv )
                     goodMatches.push_back( matches[i] );
             }
             // 3D poitns
-            std::vector<cv::Point3f> src; 
-            std::vector<cv::Point3f> dst; 
+            std::vector<cv::Point3d> src; 
+            std::vector<cv::Point3d> dst; 
             for (size_t i = 0; i<goodMatches.size(); ++i)
             {
-                cv::Point2f p1 = f1.kp[goodMatches[i].queryIdx].pt;
-                cv::Point2f p2 = f2.kp[goodMatches[i].trainIdx].pt;
+                cv::Point2d p1 = f1.kp[goodMatches[i].queryIdx].pt;
+                cv::Point2d p2 = f2.kp[goodMatches[i].trainIdx].pt;
 
-                cv::Point3f point1; 
-                cv::Point3f point2;
+                cv::Point3d point1; 
+                cv::Point3d point2;
                 //cout << p1.x << " " << p2.x << endl; 
                 //cout << p1.y << " " << p2.y << endl; 
                 //cout << endl;  
@@ -228,14 +229,31 @@ int main( int argc, char** argv )
             cv::Mat rvec, translationVec, inliers, ratationVector;
             cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
             //std::cout << "size is " <<src.size() << std::endl; 
-            cv::estimateAffine3D(src, dst,affine,inliers,3,0.9999);
+
+            int half = src.size() * 0.6;
+            double threshold = 0.0; 
+            int count = 0; 
+
+            while (count < half)
+            {
+                threshold += 0.5;
+                cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.9999);
+                count = 0; 
+                for (int i = 0; i < src.size(); ++i)
+                {
+                    if(inliers.at<bool>(0,i) == true)
+                    {
+                        ++count; 
+                    }
+                }
+            }
             
 
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);
             ratationVector = ratationVector * (180.0 / 3.14); 
-            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0)-3.0; 
+            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0); 
             R1.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(1); 
             R2.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(2); 
             

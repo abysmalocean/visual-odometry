@@ -230,17 +230,26 @@ int main( int argc, char** argv )
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
-    int threshold = src.size() / 2;
-    cv::estimateAffine3D(src, dst,affine,inliers, 11 ,0.999);
+    int half = src.size() * 0.6;
+    double threshold = 0.0; 
     int count = 0; 
-    for (int i = 0; i < src.size(); ++i)
+
+    while (count < half)
     {
-        if(inliers.at<bool>(0,i) == true)
+        threshold += 0.2;
+        cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.99999);
+        count = 0; 
+        for (int i = 0; i < src.size(); ++i)
         {
-            ++count; 
+            if(inliers.at<bool>(0,i) == true)
+            {
+                ++count; 
+            }
         }
     }
-    std::cout << "Inliners : " << count << std::endl; 
+
+    std::cout << "Inliners : " << count << " Total : " << src.size() << std::endl;
+    std::cout << "thres hold " << threshold << std::endl;  
 
     //std::cout << inliers << std::endl; 
     //std::cout << src.size() << std::endl; 
