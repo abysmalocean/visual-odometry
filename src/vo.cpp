@@ -220,6 +220,7 @@ int main( int argc, char** argv )
                 point1.x = f1.depth_x.at<double>(int(p1.y), int(p1.x)); 
                 point1.y = f1.depth_y.at<double>(int(p1.y), int(p1.x)); 
                 point1.z = f1.depth_z.at<double>(int(p1.y), int(p1.x));
+
                 point2.x = f2.depth_x.at<double>(int(p2.y), int(p2.x)); 
                 point2.y = f2.depth_y.at<double>(int(p2.y), int(p2.x)); 
                 point2.z = f2.depth_z.at<double>(int(p2.y), int(p2.x));
@@ -234,10 +235,11 @@ int main( int argc, char** argv )
             int half = src.size() * 0.6;
             double threshold = 0.0; 
             int count = 0; 
-
+            cv::estimateAffine3D(src, dst,affine,inliers, 10.0 ,0.9999);
+            /*
             while (count < half)
             {
-                threshold += 0.5;
+                threshold += 1.0;
                 cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.9999);
                 count = 0; 
                 for (int i = 0; i < src.size(); ++i)
@@ -249,7 +251,7 @@ int main( int argc, char** argv )
                 }
             }
             
-
+            */
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);

@@ -230,6 +230,7 @@ int main( int argc, char** argv )
         cout<<"src.size "<<src.size()<<endl;
         cout<<"dst.size "<<dst.size()<<endl;
     }
+    
     int half = src.size() * 0.6;
     double threshold = 0.0; 
     int count = 0; 

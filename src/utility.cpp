@@ -55,7 +55,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             for (int i = 0; i < width; ++i)
             {
                 imageFile >> depth.at<double>(lineCount-1,i,2);
-                depthZ.at<double>(lineCount - 1, i) = 1000.0 * depth.at<double>(lineCount-1,i,2); 
+                depthZ.at<double>(lineCount - 1, i) = depth.at<double>(lineCount-1,i,2); 
                 //std::cout << depthZ.at<double>(lineCount - 1, i) << std::endl;
             }
         }
@@ -74,7 +74,8 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 */
                imageFile >> depth.at<double>(lineCount - height - 2, i, 0);
                depthX.at<double>(lineCount - height - 2, i) = 
-                  1000.0 * depth.at<double>(lineCount - height - 2, i, 0); 
+                  depth.at<double>(lineCount - height - 2, i, 0); 
+             //std::cout << depthX.at<double>(lineCount - height - 2, i) << std::endl; 
             }
         }
 
@@ -91,7 +92,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 */
                 imageFile >> depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
                 depthY.at<double>(lineCount - 1- 2 * (height + 1), i) = 
-                 1000.0 *  depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
+                  depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
             }
         }
 
@@ -142,24 +143,24 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     if (false)
     {
         std::cout << FileName << std::endl; 
-    cv::imshow("gray img", gray);
+        cv::imshow("gray img", gray);
 
-    depthZ *= 255.0; 
-    cv::normalize(depthZ, depthZ, 1.0, 0.0, cv::NORM_MINMAX);
-    depthZ *= 255.0; 
-    depthZ.convertTo(depthZ, CV_8UC1);
-    cv::imshow("DepthZ", depthZ);
+        depthZ *= 255.0; 
+        cv::normalize(depthZ, depthZ, 1.0, 0.0, cv::NORM_MINMAX);
+        depthZ *= 255.0; 
+        depthZ.convertTo(depthZ, CV_8UC1);
+        cv::imshow("DepthZ", depthZ);
 
-    cv::normalize(depthX, depthX, 1.0, 0.0, cv::NORM_MINMAX);
-    depthX *= 255.0; 
-    depthX.convertTo(depthX, CV_8UC1);
-    cv::imshow("DepthX", depthX);
-    // depthX is Z; 
-    cv::normalize(depthY, depthY, 1.0, 0.0, cv::NORM_MINMAX);
-    depthY *= 255.0; 
-    depthY.convertTo(depthY, CV_8UC1);
-    cv::imshow("DepthY", depthY);
-    cv::waitKey(0); 
+        cv::normalize(depthX, depthX, 1.0, 0.0, cv::NORM_MINMAX);
+        depthX *= 255.0; 
+        depthX.convertTo(depthX, CV_8UC1);
+        cv::imshow("DepthX", depthX);
+        // depthX is Z; 
+        cv::normalize(depthY, depthY, 1.0, 0.0, cv::NORM_MINMAX);
+        depthY *= 255.0; 
+        depthY.convertTo(depthY, CV_8UC1);
+        cv::imshow("DepthY", depthY);
+        cv::waitKey(0); 
     }
 
     
