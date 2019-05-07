@@ -234,7 +234,8 @@ int main( int argc, char** argv )
     int half = src.size() * 0.6;
     double threshold = 0.0; 
     int count = 0; 
-
+    //cv::estimateAffine3D(src, dst,affine,inliers, 5.0 ,0.99999);
+    
     while (count < half)
     {
         threshold += 0.2;
@@ -248,7 +249,7 @@ int main( int argc, char** argv )
             }
         }
     }
-
+    
     std::cout << "Inliners : " << count << " Total : " << src.size() << std::endl;
     std::cout << "thres hold " << threshold << std::endl;  
 
