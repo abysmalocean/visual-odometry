@@ -42,6 +42,7 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     std::string str; 
     std::string tmp; 
     size_t lineCount = 0; 
+    double currentVal; 
 
     while(getline(imageFile, str))
     {
@@ -54,8 +55,9 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
             //std::cout << lineCount - 1 << std::endl; 
             for (int i = 0; i < width; ++i)
             {
-                imageFile >> depth.at<double>(lineCount-1,i,2);
-                depthZ.at<double>(lineCount - 1, i) = depth.at<double>(lineCount-1,i,2); 
+                imageFile >> currentVal; 
+                depth.at<double>(lineCount-1,i,2) = currentVal;
+                depthZ.at<double>(lineCount - 1, i) = currentVal ; 
                 //std::cout << depthZ.at<double>(lineCount - 1, i) << std::endl;
             }
         }
@@ -72,9 +74,9 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 depth.at<double>(lineCount - height - 2, i, 0) = 
                         depthX.at<double>(lineCount - height - 2, i);
                 */
-               imageFile >> depth.at<double>(lineCount - height - 2, i, 0);
-               depthX.at<double>(lineCount - height - 2, i) = 
-                  depth.at<double>(lineCount - height - 2, i, 0); 
+               imageFile >> currentVal; 
+               depth.at<double>(lineCount - height - 2, i, 0) = currentVal;
+               depthX.at<double>(lineCount - height - 2, i)   = currentVal ; 
              //std::cout << depthX.at<double>(lineCount - height - 2, i) << std::endl; 
             }
         }
@@ -90,9 +92,9 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
                 depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1) = 
                         depthY.at<double>(lineCount - 1- 2 * (height + 1), i); 
                 */
-                imageFile >> depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
-                depthY.at<double>(lineCount - 1- 2 * (height + 1), i) = 
-                  depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1); 
+                imageFile >> currentVal; 
+                depth.at<double>(lineCount - 1- 2 * (height + 1), i, 1) = currentVal; 
+                depthY.at<double>(lineCount - 1- 2 * (height + 1), i) = currentVal ; 
             }
         }
 
@@ -101,7 +103,8 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
         {
             for (int i = 0; i < width; ++i)
             {
-                imageFile >> gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0);
+                imageFile >> currentVal; 
+                gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0) = currentVal;
                 //std::cout << gray.at<double>(lineCount - 1 - 3 * (height+1), i, 0) << std::endl; 
                 //std::cout << gray.at<double>(lineCount - 3*height, i, 0); 
             }
@@ -164,18 +167,18 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     }
 
     
-    cv::GaussianBlur(depthX,depthX,cv::Size(5,5),0);
-    cv::GaussianBlur(depthY,depthY,cv::Size(5,5),0);
-    cv::GaussianBlur(depthZ,depthZ,cv::Size(5,5),0);
+    cv::GaussianBlur(depthX,depthX,cv::Size(5,5),1);
+    cv::GaussianBlur(depthY,depthY,cv::Size(5,5),1);
+    cv::GaussianBlur(depthZ,depthZ,cv::Size(5,5),1);
     //cv::GaussianBlur(gray,gray,cv::Size(3,3),1);
 
     //cv::equalizeHist(gray,gray); 
     f.rgb = gray.clone(); 
     f.depth = depth.clone(); 
 
-    f.depth_x = depthX.clone(); 
-    f.depth_y = depthY.clone(); 
-    f.depth_z = depthZ.clone(); 
+    f.depth_x = (depthX.clone()) * 1000.0; 
+    f.depth_y = (depthY.clone()) * 1000.0; 
+    f.depth_z = (depthZ.clone()) * 1000.0; 
     return f; 
 }
 

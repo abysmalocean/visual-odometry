@@ -59,16 +59,27 @@ void poseEstimation3D3D
         }
 	}
     Eigen::Matrix3d R_ = U * (V.transpose()); 
+
     Eigen::Vector3d t_ = Eigen::Vector3d ( p1.x, p1.y, p1.z ) - 
                          R_ * Eigen::Vector3d ( p2.x, p2.y, p2.z );
+
+    
+
+    cv::Mat mat_r = (cv::Mat_<double>(3, 3) << R_(0, 0), R_(0, 1), R_(0, 2),
+             R_(1, 0), R_(1, 1), R_(1, 2),
+             R_(2, 0), R_(2, 1), R_(2, 2));
+    cv::Mat rotationVector;
+
+    cv::Rodrigues(mat_r,rotationVector);
+    cout<<"\n Rotation Vector [Ransac SVD]:\n " << rotationVector * (180.0 / 3.14) << endl; 
+    cout <<"\n Translation vector [Ransac SVD]: \n" << t_ << endl; 
+
+
     // convert to cv::Mat
     auto rot = Eigen::AngleAxisd(R_).axis();
     R[0] = rot[0]; 
     R[1] = rot[1]; 
     R[2] = rot[2]; 
-
-    
-
     t[0] = t_(0,0); 
     t[1] = t_(1,0); 
     t[2] = t_(2,0); 
@@ -200,6 +211,7 @@ int main( int argc, char** argv )
         point1.x = f1.depth_x.at<double>(int(p1.y), int(p1.x)); 
         point1.y = f1.depth_y.at<double>(int(p1.y), int(p1.x)); 
         point1.z = f1.depth_z.at<double>(int(p1.y), int(p1.x));
+
         point2.x = f2.depth_x.at<double>(int(p2.y), int(p2.x)); 
         point2.y = f2.depth_y.at<double>(int(p2.y), int(p2.x)); 
         point2.z = f2.depth_z.at<double>(int(p2.y), int(p2.x));
@@ -231,14 +243,14 @@ int main( int argc, char** argv )
         cout<<"dst.size "<<dst.size()<<endl;
     }
     
-    int half = src.size() * 0.6;
-    double threshold = 0.0; 
+    int half = src.size() * 0.7;
+    double threshold = 10.0; 
     int count = 0; 
     //cv::estimateAffine3D(src, dst,affine,inliers, 5.0 ,0.99999);
     
     while (count < half)
     {
-        threshold += 0.2;
+        threshold += 0.5;
         cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.99999);
         count = 0; 
         for (int i = 0; i < src.size(); ++i)
@@ -255,7 +267,19 @@ int main( int argc, char** argv )
 
     //std::cout << inliers << std::endl; 
     //std::cout << src.size() << std::endl; 
+
     int writeImg = atoi( pd.getData( "writeImg" ).c_str() );
+    std::vector<cv::Point3d> srcSVD; 
+    std::vector<cv::Point3d> dstSVD; 
+    for (int i = 0; i < src.size(); ++i)
+        {
+            if(inliers.at<bool>(0,i) == true)
+            {
+                srcSVD.push_back(src[i]); 
+                dstSVD.push_back(dst[i]); 
+            }
+        }
+
     if (writeImg)
     {
         cv::Mat imgMatches;
@@ -276,32 +300,18 @@ int main( int argc, char** argv )
     cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
     cv::Rodrigues(ratationMatrix,ratationVector);
 
-    cv::Mat R = ratationMatrix; 
-    double sy= std::sqrt(R.at<double>(0,0) * R.at<double>(0,0) +  R.at<double>(1,0) * R.at<double>(1,0) );
-    double roll = std::atan2(R.at<double>(2,1) , R.at<double>(2,2));
-    double pitch = std::atan2(-R.at<double>(2,0), sy);
-    double yaw = std::atan2(R.at<double>(1,0), R.at<double>(0,0));
-    std::cout << "Roll " << roll << " pitch " << pitch << " yaw " << yaw << std::endl; 
 
 
     translationVec = affine(cv::Rect(3,0,1,3));
-    ratationVector = ratationVector * (180 / 3.14); 
-    std::cout<<"\nRotation Vector :\n "<<ratationVector<<endl;
+    ratationVector = ratationVector * (180.0 / 3.14); 
+    std::cout<<"\nRotation Vector [From API]:\n "<<ratationVector<<endl;
     std::cout<<"\ntranslation : \n"<<translationVec<<endl;
 
     std::vector<double> t(3); 
     std::vector<double> Rot(3); 
 
-    poseEstimation3D3D(src, dst, Rot, t); 
-    cv::Rodrigues(R,ratationVector);
-    std::cout << " \n3D3D SVD Result" << std::endl; 
-    std::cout << Rot[0] << " " << Rot[1] << " " << Rot[2] << std::endl; 
-    std::cout << " \ntranslation Result \n" << t[0] << " " << t[1] << " " << t[2] << std::endl; 
-
-   
-
-
-
+    poseEstimation3D3D(srcSVD, dstSVD, Rot, t); 
+    
     return 0; 
 
 }

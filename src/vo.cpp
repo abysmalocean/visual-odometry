@@ -64,11 +64,17 @@ void poseEstimation3D3D
     Eigen::Matrix3d R_ = U * (V.transpose()); 
     Eigen::Vector3d t_ = Eigen::Vector3d ( p1.x, p1.y, p1.z ) - 
                          R_ * Eigen::Vector3d ( p2.x, p2.y, p2.z );
-    // convert to cv::Mat
-    auto rot = Eigen::AngleAxisd(R_).axis();
-    R[0] = rot[0]; 
-    R[1] = rot[1]; 
-    R[2] = rot[2]; 
+
+    cv::Mat mat_r = (cv::Mat_<double>(3, 3) << R_(0, 0), R_(0, 1), R_(0, 2),
+             R_(1, 0), R_(1, 1), R_(1, 2),
+             R_(2, 0), R_(2, 1), R_(2, 2));
+    cv::Mat rotationVector;
+
+    cv::Rodrigues(mat_r,rotationVector);
+    
+    R[0] = rotationVector.at<double>(0); 
+    R[1] = rotationVector.at<double>(1); 
+    R[2] = rotationVector.at<double>(2); 
 
     
 
@@ -232,14 +238,14 @@ int main( int argc, char** argv )
             cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
             //std::cout << "size is " <<src.size() << std::endl; 
 
-            int half = src.size() * 0.6;
-            double threshold = 0.0; 
+            int half = src.size() * 0.7;
+            double threshold = 10.0; 
             int count = 0; 
             cv::estimateAffine3D(src, dst,affine,inliers, 10.0 ,0.9999);
-            /*
+            
             while (count < half)
             {
-                threshold += 1.0;
+                threshold += 0.5;
                 cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.9999);
                 count = 0; 
                 for (int i = 0; i < src.size(); ++i)
@@ -250,19 +256,34 @@ int main( int argc, char** argv )
                     }
                 }
             }
+
+            std::vector<cv::Point3d> srcSVD; 
+            std::vector<cv::Point3d> dstSVD; 
+            for (int i = 0; i < src.size(); ++i)
+            {
+                if(inliers.at<bool>(0,i) == true)
+                {
+                    srcSVD.push_back(src[i]); 
+                    dstSVD.push_back(dst[i]); 
+                }
+            }
+
+            std::vector<double> t(3); 
+            std::vector<double> Rot(3);
+            poseEstimation3D3D(srcSVD, dstSVD, Rot, t);
             
-            */
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);
             ratationVector = ratationVector * (180.0 / 3.14); 
-            R0.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(0); 
-            R1.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(1); 
-            R2.at<double>(sourceIndex, distIndex) = ratationVector.at<double>(2); 
+
+            R0.at<double>(sourceIndex, distIndex) = Rot[0]; 
+            R1.at<double>(sourceIndex, distIndex) = Rot[1]; 
+            R2.at<double>(sourceIndex, distIndex) = Rot[2]; 
             
-            T0.at<double>(sourceIndex, distIndex) = translationVec.at<double>(0);
-            T1.at<double>(sourceIndex, distIndex) = translationVec.at<double>(1); 
-            T2.at<double>(sourceIndex, distIndex) = translationVec.at<double>(2); 
+            T0.at<double>(sourceIndex, distIndex) = t[0];
+            T1.at<double>(sourceIndex, distIndex) = t[1]; 
+            T2.at<double>(sourceIndex, distIndex) = t[2]; 
             //R[i*source.size() + j] = rvecN;
             //T[i*source.size() + j] = tvecN; 
 
