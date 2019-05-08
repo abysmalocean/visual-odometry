@@ -182,3 +182,27 @@ FRAME readImage(std::string FileName, ParameterReader *pd, int ID)
     return f; 
 }
 
+double VectorMean(std::vector<double> &input)
+{
+    if (input.size() == 0)
+    {
+        return 0.0; 
+    }
+    double avg = input[0]; 
+    for (int i = 1 ; i < input.size(); ++i)
+    {
+        double learingRate = (1.0/((double)i)); 
+        avg = avg + learingRate * (input[i]- avg); 
+    }
+    return avg; 
+}
+
+double stdDev(std::vector<double> &input, double mean)
+{
+    double Dev = 0.0; 
+    for (int i = 0; i < input.size(); ++i)
+    {
+        Dev += (input[i] - mean) * (input[i] - mean); 
+    }
+    return std::sqrt( Dev / input.size()); 
+}

@@ -45,7 +45,8 @@ struct CAMERA_INTRINSIC_PARAMETERS
 { 
     double cx, cy, fx, fy, scale;
 };
-
+double VectorMean(std::vector<double> &input); 
+double stdDev(std::vector<double> &input, double mean); 
 
 
 // read parameters

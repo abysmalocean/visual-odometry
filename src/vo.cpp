@@ -22,6 +22,7 @@ using std::cout;
 using std::endl;
 
 
+
 void poseEstimation3D3D
 (const std::vector<cv::Point3d>& pts1, 
  const std::vector<cv::Point3d>& pts2,
@@ -172,7 +173,16 @@ int main( int argc, char** argv )
     cv::Mat R2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     cv::Mat T0 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     cv::Mat T1 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
-    cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
+    cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F); 
+
+    std::vector<double> r0; 
+    std::vector<double> r1; 
+    std::vector<double> r2;
+
+    std::vector<double> t0; 
+    std::vector<double> t1; 
+    std::vector<double> t2; 
+
     int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
     std::vector<double> t(3); 
     std::vector<double> Rot(3); 
@@ -197,6 +207,10 @@ int main( int argc, char** argv )
             //std::cout << matches.size() << std::endl; 
 
             std::vector<cv::DMatch> goodMatches; 
+            if (matches.size() < 5)
+            {
+                continue; 
+            }
 
             double minDis = 999;
             // get the smallest dist 
@@ -236,11 +250,16 @@ int main( int argc, char** argv )
                 dst.push_back(point2);
             }
 
+            if (src.size() < 5)
+            {
+                continue; 
+            }
+
             cv::Mat rvec, translationVec, inliers, ratationVector;
             cv::Mat affine = cv::Mat::zeros(3,4,CV_64F);
             //std::cout << "size is " <<src.size() << std::endl; 
 
-            int half = src.size() * 0.7;
+            int half = src.size() * 0.6;
             double threshold = 10.0; 
             int count = 0; 
             while (count < half && threshold < 200.0)
@@ -269,11 +288,15 @@ int main( int argc, char** argv )
                 }
             }
 
-            if (srcSVD.size() != 0)
+            if (srcSVD.size() > 5)
             {
                 //cout << "empty " << endl; 
                 poseEstimation3D3D(srcSVD, dstSVD, Rot, t);
+                r0.push_back(Rot[0]); 
+                r1.push_back(Rot[1]); 
+                r2.push_back(Rot[2]);
             }
+
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);
@@ -286,6 +309,8 @@ int main( int argc, char** argv )
             T0.at<double>(sourceIndex, distIndex) = t[0];
             T1.at<double>(sourceIndex, distIndex) = t[1]; 
             T2.at<double>(sourceIndex, distIndex) = t[2]; 
+
+
 
             if (display)
             {
@@ -309,6 +334,20 @@ int main( int argc, char** argv )
     printf("T1: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
 	cv::meanStdDev(T2, means, stddev);
     printf("T2: mean: %.2f, stddev: %.2f\n", means.at<double>(0), stddev.at<double>(0));
+
+    double r0mean = VectorMean(r0); 
+    double r1mean = VectorMean(r1); 
+    double r2mean = VectorMean(r2);
+    
+    double r0std = stdDev(r0, r0mean); 
+    double r1std = stdDev(r1, r1mean); 
+    double r2std = stdDev(r2, r2mean);
+
+
+
+    cout << " r0: "<< r0mean << "  r1" << r1mean << " r2 " << r2mean << endl; 
+    cout << " r0: "<< r0std << "  r1" << r1std << " r2 " << r2std << endl; 
+
 
 
     return 0; 
