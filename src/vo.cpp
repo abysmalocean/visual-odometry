@@ -174,7 +174,8 @@ int main( int argc, char** argv )
     cv::Mat T1 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     cv::Mat T2 = cv::Mat::zeros(source.size(), distination.size(), CV_64F);  
     int scaleOfGoodMatch = atoi( pd.getData( "scaleOfGoodMatch" ).c_str() );
-
+    std::vector<double> t(3); 
+    std::vector<double> Rot(3); 
 
     //#pragma omp parallel for
     for (int sourceIndex = 0; sourceIndex < source.size(); ++sourceIndex)
@@ -242,8 +243,6 @@ int main( int argc, char** argv )
             int half = src.size() * 0.7;
             double threshold = 10.0; 
             int count = 0; 
-            cv::estimateAffine3D(src, dst,affine,inliers, 10.0 ,0.9999);
-            
             while (count < half && threshold < 20.0)
             {
                 threshold += 0.5;
@@ -270,10 +269,10 @@ int main( int argc, char** argv )
                 }
             }
 
-            std::vector<double> t(3); 
-            std::vector<double> Rot(3);
-            poseEstimation3D3D(srcSVD, dstSVD, Rot, t);
-            
+            if (srcSVD.size() != 0)
+            {
+                poseEstimation3D3D(srcSVD, dstSVD, Rot, t);
+            }
             cv::Mat ratationMatrix = affine(cv::Rect(0,0,3,3));
             translationVec = affine(cv::Rect(3,0,1,3));
             cv::Rodrigues(ratationMatrix,ratationVector);
