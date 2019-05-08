@@ -243,7 +243,7 @@ int main( int argc, char** argv )
             int count = 0; 
             cv::estimateAffine3D(src, dst,affine,inliers, 10.0 ,0.9999);
             
-            while (count < half)
+            while (count < half && threshold < 20.0)
             {
                 threshold += 0.5;
                 cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.9999);
@@ -259,6 +259,7 @@ int main( int argc, char** argv )
 
             std::vector<cv::Point3d> srcSVD; 
             std::vector<cv::Point3d> dstSVD; 
+
             for (int i = 0; i < src.size(); ++i)
             {
                 if(inliers.at<bool>(0,i) == true)
@@ -284,8 +285,6 @@ int main( int argc, char** argv )
             T0.at<double>(sourceIndex, distIndex) = t[0];
             T1.at<double>(sourceIndex, distIndex) = t[1]; 
             T2.at<double>(sourceIndex, distIndex) = t[2]; 
-            //R[i*source.size() + j] = rvecN;
-            //T[i*source.size() + j] = tvecN; 
 
             if (display)
             {
