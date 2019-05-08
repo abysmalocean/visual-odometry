@@ -71,6 +71,7 @@ void poseEstimation3D3D
     cv::Mat rotationVector;
 
     cv::Rodrigues(mat_r,rotationVector);
+    rotationVector *= (180.0 / 3.14);  
     
     R[0] = rotationVector.at<double>(0); 
     R[1] = rotationVector.at<double>(1); 
