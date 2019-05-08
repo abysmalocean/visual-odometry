@@ -66,8 +66,8 @@ scaleOfGoodMatch=10
 #folder1=RV_Data/Yaw/d1_44/
 #folder2=RV_Data/Yaw/d2_41/
 
-#folder1=RV_Data/Yaw/d2_41/
-#folder2=RV_Data/Yaw/d3_38/
+folder1=RV_Data/Yaw/d2_41/
+folder2=RV_Data/Yaw/d3_38/
 
 #folder1=RV_Data/Yaw/d3_38/
 #folder2=RV_Data/Yaw/d4_35/
@@ -78,8 +78,8 @@ scaleOfGoodMatch=10
 #folder1=RV_Data/Yaw/d2_41/
 #folder2=RV_Data/Yaw/d4_35/
 
-folder1=RV_Data/Yaw/d1_44/
-folder2=RV_Data/Yaw/d4_35/
+#folder1=RV_Data/Yaw/d1_44/
+#folder2=RV_Data/Yaw/d4_35/
 
 #folder1=RV_Data/RV_Data1_Test/d6_-25/
 #folder2=RV_Data/RV_Data1_Test/d7_-22/
