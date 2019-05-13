@@ -262,10 +262,10 @@ int main( int argc, char** argv )
             int half = src.size() * 0.6;
             double threshold = 10.0; 
             int count = 0; 
-            while (count < half && threshold < 200.0)
+            while (count < half && threshold < 100.0)
             {
                 threshold += 0.5;
-                cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.98);
+                cv::estimateAffine3D(src, dst,affine,inliers, threshold ,0.99);
                 count = 0; 
                 for (int i = 0; i < src.size(); ++i)
                 {
@@ -288,7 +288,7 @@ int main( int argc, char** argv )
                 }
             }
 
-            if (srcSVD.size() > 5)
+            if (srcSVD.size() > 5 && threshold < 30.0)
             {
                 //cout << "empty " << endl; 
                 poseEstimation3D3D(srcSVD, dstSVD, Rot, t);

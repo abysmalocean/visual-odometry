@@ -48,3 +48,10 @@ TARGET_LINK_LIBRARIES( pointClould
     utility
     ${OpenCV_LIBS} 
     ${PCL_LIBRARIES} )
+
+
+ADD_EXECUTABLE( measureTwo measureTwo.cpp )
+TARGET_LINK_LIBRARIES( measureTwo
+    utility
+    ${OpenCV_LIBS} 
+    ${PCL_LIBRARIES} )
